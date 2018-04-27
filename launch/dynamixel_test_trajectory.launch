@@ -6,13 +6,13 @@
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
-  <group ns="rrbot">
+  <group ns="dynamixel">
 
     <!-- Load hardware interface -->
     <node name="test_trajectory" pkg="ros_control_boilerplate" type="test_trajectory"
           output="screen" launch-prefix="$(arg launch_prefix)">
-      <param name="action_topic" value="/rrbot/position_trajectory_controller/follow_joint_trajectory/"/>
-      <rosparam file="$(find ros_control_boilerplate)/rrbot_control/config/rrbot_controllers.yaml" command="load"/>
+      <param name="action_topic" value="/dynamixel/position_trajectory_controller/follow_joint_trajectory/"/>
+      <rosparam file="$(find ros_control_boilerplate)/dynamixel_ros_control/config/dynamixel_ros_controllers.yaml" command="load"/>
     </node>
 
   </group>

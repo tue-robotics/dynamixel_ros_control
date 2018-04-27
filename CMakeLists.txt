@@ -1,52 +1,30 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ros_control_boilerplate)
+project(dynamixel_ros_control)
 
-# C++ 11
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall ${CMAKE_CXX_FLAGS}")
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS
-  cmake_modules
-  hardware_interface
-  controller_manager
-  roscpp
-  control_msgs
-  trajectory_msgs
-  actionlib
-  urdf
-  joint_limits_interface
-  transmission_interface
-  control_toolbox
-  std_msgs
-  sensor_msgs
-  rosparam_shortcuts
+find_package(catkin REQUIRED
+  ros_control_boilerplate
 )
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-find_package(Gflags REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if your package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS
-    include
-  CATKIN_DEPENDS
-    hardware_interface
-    controller_manager
-    roscpp
-    control_msgs
-    trajectory_msgs
-    urdf
-    joint_limits_interface
-    transmission_interface
-    control_toolbox
-    std_msgs
-    sensor_msgs
-    rosparam_shortcuts
-  LIBRARIES
-    generic_hw_control_loop
-    generic_hw_interface
-    sim_hw_interface
+ INCLUDE_DIRS include
+ LIBRARIES dynamixel_hw_interface
+ CATKIN_DEPENDS ros_control_boilerplate
+#  DEPENDS system_lib
 )
 
 ###########
@@ -54,110 +32,40 @@ catkin_package(
 ###########
 
 include_directories(
-  include/
+  include
   ${catkin_INCLUDE_DIRS}
-  ${Gflags_INCLUDE_DIRS}
 )
 
-# Control loop
-add_library(generic_hw_control_loop src/generic_hw_control_loop.cpp)
-target_link_libraries(generic_hw_control_loop
-  ${catkin_LIBRARIES}
+# Dynamixel Hardware Interface
+add_library(dynamixel_hw_interface
+  src/dynamixel_hw_interface.cpp
 )
-
-# Generic Hardware Interface
-add_library(generic_hw_interface
-  src/generic_hw_interface.cpp
-)
-target_link_libraries(generic_hw_interface
-  ${catkin_LIBRARIES}
-)
-
-# Simulation Hardware Interface
-add_library(sim_hw_interface
-  src/sim_hw_interface.cpp
-)
-target_link_libraries(sim_hw_interface
-  generic_hw_interface
+target_link_libraries(dynamixel_hw_interface
   ${catkin_LIBRARIES}
 )
 
 # Main control executable
-add_executable(${PROJECT_NAME}_sim_hw_main src/sim_hw_main.cpp)
-set_target_properties(${PROJECT_NAME}_sim_hw_main PROPERTIES OUTPUT_NAME sim_hw_main PREFIX "")
-target_link_libraries(${PROJECT_NAME}_sim_hw_main
-  sim_hw_interface
-  generic_hw_control_loop
+add_executable(dynamixel_hw_main src/dynamixel_hw_main.cpp)
+target_link_libraries(dynamixel_hw_main
+  dynamixel_hw_interface
   ${catkin_LIBRARIES}
 )
-
-# Test trajectory generator node
-add_executable(${PROJECT_NAME}_test_trajectory src/tools/test_trajectory.cpp)
-set_target_properties(${PROJECT_NAME}_test_trajectory PROPERTIES OUTPUT_NAME test_trajectory PREFIX "")
-target_link_libraries(${PROJECT_NAME}_test_trajectory
-  ${catkin_LIBRARIES}
-)
-
-## TOOLS ------------------------------------------------------
-
-# Tool for analyzing controller performance
-add_library(controller_to_csv src/tools/controller_to_csv.cpp)
-target_link_libraries(controller_to_csv
-  ${catkin_LIBRARIES}
-)
-add_executable(${PROJECT_NAME}_controller_to_csv_main src/tools/controller_to_csv_main.cpp)
-set_target_properties(${PROJECT_NAME}_controller_to_csv_main PROPERTIES OUTPUT_NAME controller_to_csv_main PREFIX "")
-target_link_libraries(${PROJECT_NAME}_controller_to_csv_main
-  controller_to_csv
-  ${Gflags_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-# Tool for analyzing controller performance
-add_library(csv_to_controller src/tools/csv_to_controller.cpp)
-target_link_libraries(csv_to_controller
-  ${catkin_LIBRARIES}
-)
-add_executable(${PROJECT_NAME}_csv_to_controller_main src/tools/csv_to_controller_main.cpp)
-set_target_properties(${PROJECT_NAME}_csv_to_controller_main PROPERTIES OUTPUT_NAME csv_to_controller_main PREFIX "")
-target_link_libraries(${PROJECT_NAME}_csv_to_controller_main
-  csv_to_controller
-  ${Gflags_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-# Tool for controlling a robot from keyboard
-add_executable(${PROJECT_NAME}_keyboard_teleop src/tools/keyboard_teleop.cpp)
-set_target_properties(${PROJECT_NAME}_keyboard_teleop PROPERTIES OUTPUT_NAME keyboard_teleop PREFIX "")
-target_link_libraries(${PROJECT_NAME}_keyboard_teleop
-  ${catkin_LIBRARIES}
-)
-
-add_subdirectory(rrbot_control)
 
 ## Install ------------------------------------------------------------
 
 # Install libraries
 install(TARGETS
-    generic_hw_control_loop
-    generic_hw_interface
-    sim_hw_interface
-    controller_to_csv
-    csv_to_controller
+    dynamixel_hw_interface
   LIBRARY DESTINATION
     ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
 # Install executables
 install(TARGETS
-    ${PROJECT_NAME}_sim_hw_main
-    ${PROJECT_NAME}_test_trajectory
-    ${PROJECT_NAME}_controller_to_csv_main
-    ${PROJECT_NAME}_csv_to_controller_main
-    ${PROJECT_NAME}_keyboard_teleop
+    dynamixel_hw_main
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # Install header files
-install(DIRECTORY include/${PROJECT_NAME}/   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+install(DIRECTORY include/dynamixel_ros_control/   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
