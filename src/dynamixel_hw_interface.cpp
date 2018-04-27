@@ -24,6 +24,8 @@ void DynamixelHWInterface::read(ros::Duration &elapsed_time)
 
 void DynamixelHWInterface::write(ros::Duration &elapsed_time)
 {
+  printState();
+
   // Safety
   enforceLimits(elapsed_time);
 
