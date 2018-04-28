@@ -14,7 +14,7 @@
   <xacro:include filename="$(find dynamixel_ros_control)/tests/materials.xacro" />
 
   <!-- Base Link -->
-  <link name="link1">
+  <link name="link_base">
     <collision>
       <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
       <geometry>
@@ -41,15 +41,15 @@
   </link>
 
   <joint name="joint1" type="continuous">
-    <parent link="link1"/>
-    <child link="link2"/>
+    <parent link="link_base"/>
+    <child link="link1"/>
     <origin xyz="0 ${width} ${height1 - axel_offset}" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0.7"/>
   </joint>
 
   <!-- Middle Link -->
-  <link name="link2">
+  <link name="link1">
     <collision>
       <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
       <geometry>
@@ -72,6 +72,41 @@
 	  ixx="${mass / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
 	  iyy="${mass / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
 	  izz="${mass / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+  </link>
+
+  <joint name="joint2" type="continuous">
+    <parent link="link_base"/>
+    <child link="link2"/>
+    <origin xyz="0 ${width} ${height1 - axel_offset}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.7"/>
+  </joint>
+
+  <!-- Middle Link -->
+  <link name="link2">
+    <collision>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+  <box size="${width} ${width} ${height2}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+  <box size="${width} ${width} ${height2}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+    ixx="${mass / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
+    iyy="${mass / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
+    izz="${mass / 12.0 * (width*width + width*width)}"/>
     </inertial>
   </link>
 
