@@ -3,18 +3,44 @@
 
 namespace dynamixel_ros_control
 {
+template <typename T, typename U>
+bool CanValueFitType(const U value)
+{
+  return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
+}
+
 DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urdf_model)
   : ros_control_boilerplate::GenericHWInterface(nh, urdf_model)
 {
   ROS_INFO_NAMED("dynamixel_hw_interface", "DynamixelHWInterface Starting...");
 
-  // TODO: load from param server
-  dynamixel_ids_ = { 2 };
+  // read the ids from the parameter server
+  std::vector<int> ids;
+  if (!nh.getParam("dynamixel_ids", ids))
+  {
+    ROS_ERROR_NAMED("dynamixel_hw_interface", "Parameter dynamixel_ids should be an array of dynamixel ids");
+    ros::shutdown();
+    return;
+  }
 
+  // try to convert to uint8_t
+  dynamixel_ids_.reserve(ids.size());
+  for (const auto id : ids)
+  {
+    if (!CanValueFitType<uint8_t>(id))
+    {
+      ROS_ERROR_NAMED("dynamixel_hw_interface", "Dynamixel id '%i' is not uint8_t", id);
+      ros::shutdown();
+      return;
+    }
+    dynamixel_ids_.push_back(id);
+  }
+
+  // open the dynamixel workbench
   std::string device_name = nh.param<std::string>("device_name", "/dev/ttyUSB0");
   uint32_t dxl_baud_rate = nh.param<int>("baud_rate", 57600);
 
-  uint8_t scan_range = nh.param<int>("scan_range", 20);
+  uint8_t scan_range = nh.param<int>("scan_range", 10);
 
   uint32_t profile_velocity = nh.param<int>("profile_velocity", 200);
   uint32_t profile_acceleration = nh.param<int>("profile_acceleration", 50);
@@ -23,33 +49,38 @@ DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urd
 
   dxl_wb_->begin(device_name.c_str(), dxl_baud_rate);
 
-  uint8_t dxl_id_[16];
-  uint8_t dxl_cnt_;
-  if (dxl_wb_->scan(dxl_id_, &dxl_cnt_, scan_range) != true)
+  // do a scan for all available dynamixels
+
+  std::vector<uint8_t> dxl_ids;
   {
-    ROS_ERROR("Not found Motors, Please check scan range and baud rate");
-    ros::shutdown();
-    return;
+    dxl_ids.resize(scan_range);
+    uint8_t dxl_cnt;
+    if (dxl_wb_->scan(dxl_ids.data(), &dxl_cnt, scan_range) != true)
+    {
+      ROS_ERROR_NAMED("dynamixel_hw_interface", "Not found Motors, Please check scan range and baud rate");
+      ros::shutdown();
+      return;
+    }
+    dxl_ids.resize(dxl_cnt);
   }
 
-  for (const auto id : dynamixel_ids_)
+  for (const auto id : dxl_ids)
   {
-    printf("MODEL   : %s\n", dxl_wb_->getModelName(id));
-    printf("ID      : %d\n", id);
-    printf("\n");
-  }
-  for (const auto id : dynamixel_ids_)
-  {
-    dxl_wb_->jointMode(id, profile_velocity, profile_acceleration);
+    ROS_INFO_NAMED("dynamixel_hw_interface", "Found dynamixel id=%u, model=%s", id, dxl_wb_->getModelName(id));
   }
 
-  // for (int index = 0; index < dxl_cnt_; index++)
-  // {
-  //   printf("MODEL   : %s\n", dxl_wb_->getModelName(dxl_id_[index]));
-  //   printf("ID      : %d\n", dxl_id_[index]);
-  //   printf("\n");
-  // }
-  printf("-----------------------------------------------------------------------\n");
+  for (const uint8_t id : dynamixel_ids_)
+  {
+    if (std::find(dxl_ids.begin(), dxl_ids.end(), id) != dxl_ids.end())
+    {
+      ROS_INFO_NAMED("dynamixel_hw_interface", "Setting dynamixel id=%u to jointMode", id);
+      dxl_wb_->jointMode(id, profile_velocity, profile_acceleration);
+    }
+    else
+    {
+      ROS_ERROR_NAMED("dynamixel_hw_interface", "Dynamixel id=%u not found", id);
+    }
+  }
 
   ROS_INFO_NAMED("dynamixel_hw_interface", "DynamixelHWInterface Ready.");
 }
@@ -69,7 +100,7 @@ void DynamixelHWInterface::read(ros::Duration& elapsed_time)
 
 void DynamixelHWInterface::write(ros::Duration& elapsed_time)
 {
-  printState();
+  // printState();
 
   // Safety
   enforceLimits(elapsed_time);
