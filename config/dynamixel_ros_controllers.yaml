@@ -2,7 +2,7 @@ scan_range: 20
 
 # which dynamixel ids to control, should be the same order as hardware_interface.joints
 dynamixel_ids:
-- 1
+- 2
 
 # Settings for ros_control control loop
 generic_hw_control_loop:
@@ -12,8 +12,7 @@ generic_hw_control_loop:
 # Settings for ros_control hardware interface
 hardware_interface:
   joints:
-  # - joint1
-  - joint2
+  - joint1
   sim_control_mode: 0 # 0: position, 1: velocity
 
 # Publish all joint states ----------------------------------
