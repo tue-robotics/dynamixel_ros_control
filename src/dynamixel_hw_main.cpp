@@ -3,8 +3,12 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "dynamixel_hw_interface");
+  ros::init(argc, argv, "dynamixel_hw_interface.generic_hw_interface");
   ros::NodeHandle nh;
+
+if( ros::console::set_logger_level("ros.ros_control_boilerplate", ros::console::levels::Debug) ) {
+   ros::console::notifyLoggerLevelsChanged();
+}
 
   // NOTE: We run the ROS loop in a separate thread as external calls such
   // as service callbacks to load controllers can block the (main) control loop

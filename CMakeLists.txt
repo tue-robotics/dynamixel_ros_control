@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
   ros_control_boilerplate
+  dynamixel_workbench_toolbox
 )
 
 ## System dependencies are found with CMake's conventions
@@ -36,8 +37,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+file(GLOB HEADERS include/*/*.h)
+
 # Dynamixel Hardware Interface
 add_library(dynamixel_hw_interface
+  ${HEADERS}
   src/dynamixel_hw_interface.cpp
 )
 target_link_libraries(dynamixel_hw_interface

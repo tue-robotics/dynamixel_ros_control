@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
+#include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
 
 namespace dynamixel_ros_control
 {
@@ -16,6 +17,10 @@ public:
 
   virtual void enforceLimits(ros::Duration &period);
 
+private:
+  // Dynamixel Workbench Parameters
+  DynamixelWorkbench *dxl_wb_;
+  std::vector<uint8_t> dynamixel_ids_;
 }; 
 
 }
