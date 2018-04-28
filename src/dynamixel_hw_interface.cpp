@@ -1,6 +1,14 @@
 #include <dynamixel_ros_control/dynamixel_hw_interface.h>
 #include <rosparam_shortcuts/rosparam_shortcuts.h>
 
+#define ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN(...)                                                                   \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    ROS_ERROR_NAMED(__VA_ARGS__);                                                                                      \
+    ros::shutdown();                                                                                                   \
+    return;                                                                                                            \
+  } while (0)
+
 namespace dynamixel_ros_control
 {
 template <typename T, typename U>
@@ -18,9 +26,14 @@ DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urd
   std::vector<int> ids;
   if (!nh.getParam("dynamixel_ids", ids))
   {
-    ROS_ERROR_NAMED("dynamixel_hw_interface", "Parameter dynamixel_ids should be an array of dynamixel ids");
-    ros::shutdown();
-    return;
+    ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN("dynamixel_hw_interface", "Parameter dynamixel_ids should be an array of "
+                                                                      "dynamixel ids");
+  }
+
+  if (joint_names_.size() != ids.size())
+  {
+    ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN("dynamixel_hw_interface", "Wrong number of dynamixel_ids, should be the "
+                                                                      "same as joint_names");
   }
 
   // try to convert to uint8_t
@@ -29,9 +42,7 @@ DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urd
   {
     if (!CanValueFitType<uint8_t>(id))
     {
-      ROS_ERROR_NAMED("dynamixel_hw_interface", "Dynamixel id '%i' is not uint8_t", id);
-      ros::shutdown();
-      return;
+      ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN("dynamixel_hw_interface", "Dynamixel id '%i' is not uint8_t", id);
     }
     dynamixel_ids_.push_back(id);
   }
@@ -57,9 +68,8 @@ DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urd
     uint8_t dxl_cnt;
     if (dxl_wb_->scan(dxl_ids.data(), &dxl_cnt, scan_range) != true)
     {
-      ROS_ERROR_NAMED("dynamixel_hw_interface", "Not found Motors, Please check scan range and baud rate");
-      ros::shutdown();
-      return;
+      ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN("dynamixel_hw_interface", "Not found Motors, Please check scan range and "
+                                                                        "baud rate");
     }
     dxl_ids.resize(dxl_cnt);
   }
@@ -78,7 +88,7 @@ DynamixelHWInterface::DynamixelHWInterface(ros::NodeHandle& nh, urdf::Model* urd
     }
     else
     {
-      ROS_ERROR_NAMED("dynamixel_hw_interface", "Dynamixel id=%u not found", id);
+      ROS_ERROR_NAMED_AND_SHUTDOWN_AND_RETURN("dynamixel_hw_interface", "Dynamixel id=%u not found", id);
     }
   }
 
