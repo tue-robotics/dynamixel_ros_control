@@ -12,7 +12,7 @@
   <group ns="dynamixel">
 
     <!-- Load hardware interface -->
-    <node name="dynamixel_hardware_interface" pkg="ros_control_boilerplate" type="sim_hw_main"
+    <node name="dynamixel_hardware_interface" pkg="ros_control_boilerplate" type="sim_hw_main" required="true"
           output="screen" launch-prefix="$(arg launch_prefix)"/>
 
     <!-- Load controller settings -->

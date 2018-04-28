@@ -9,7 +9,7 @@
   <group ns="dynamixel">
 
     <!-- Load hardware interface -->
-    <node name="test_trajectory" pkg="ros_control_boilerplate" type="test_trajectory"
+    <node name="test_trajectory" pkg="ros_control_boilerplate" type="test_trajectory" required="true"
           output="screen" launch-prefix="$(arg launch_prefix)">
       <param name="action_topic" value="/dynamixel/position_trajectory_controller/follow_joint_trajectory/"/>
       <rosparam file="$(find dynamixel_ros_control)/config/dynamixel_ros_controllers.yaml" command="load"/>
