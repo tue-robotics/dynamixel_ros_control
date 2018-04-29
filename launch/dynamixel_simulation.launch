@@ -7,7 +7,7 @@
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
   <!-- Load example URDF -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find dynamixel_ros_control)/tests/test_joint.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find dynamixel_ros_control)/tests/test_joint.xacro'" />
 
   <group ns="dynamixel">
 
