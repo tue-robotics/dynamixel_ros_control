@@ -99,8 +99,9 @@ void DynamixelHWInterface::read(ros::Duration& elapsed_time)
 {
   for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
   {
-    joint_position_[joint_id] = dxl_wb_->convertValue2Radian(
-        dynamixel_ids_[joint_id], dxl_wb_->itemRead(dynamixel_ids_[joint_id], "Present_Position"));
+    int32_t data = 0;
+    dxl_wb_->itemRead(dynamixel_ids_[joint_id], "Present_Position", &data);
+    joint_position_[joint_id] = dxl_wb_->convertValue2Radian(dynamixel_ids_[joint_id], data);
     //  joint_velocity_[joint_id] = dxl_wb_->convertValue2Velocity(dynamixel_ids_[joint_id],
     //  dxl_wb_->itemRead(dynamixel_ids_[joint_id], "Present_Velocity")); joint_effort_[joint_id] =
     //  dxl_wb_->convertValue2Torque(dynamixel_ids_[joint_id], dxl_wb_->itemRead(dynamixel_ids_[joint_id],
